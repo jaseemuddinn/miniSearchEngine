@@ -13,7 +13,6 @@ This project is a minimal, full-stack AI-powered search engine. It features:
 
 This project is still under active development and may experience:
 
-- API integration issues
 - Embedding model compatibility problems
 - CORS and networking errors
 - ChromaDB persistence issues
@@ -76,5 +75,3 @@ Common problems you might encounter:
 ## Contributing
 
 This project is in early development. If you encounter bugs or have suggestions, please feel free to contribute.
-
-See `PROMPT.md` for the project vision and features.
