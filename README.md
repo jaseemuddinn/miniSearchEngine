@@ -5,18 +5,24 @@
 This project is a minimal, full-stack AI-powered search engine. It features:
 
 - **Semantic Search** using DeepSeek embeddings and ChromaDB
-- **Smart Query Processing** and AI-generated summaries
-- **Modern Frontend** with React (Vite)
-- **FastAPI Backend** for indexing and searching documents
+- **AI-Generated Summaries** for every search result
+- **Smart Search Suggestions** with real-time query completion
+- **Search History** with persistent storage
+- **Document Upload** with automatic text processing and indexing
+- **Real-time Statistics** showing indexed document count
+- **Modern Frontend** with React (Vite) and responsive design
+- **FastAPI Backend** with async processing and CORS support
 
 ## ⚠️ Current Status
 
 This project is still under active development and may experience:
 
+- API integration issues
 - Embedding model compatibility problems
 - CORS and networking errors
 - ChromaDB persistence issues
 - DeepSeek API rate limiting
+- Search suggestion accuracy issues
 - Incomplete error handling
 - UI/UX inconsistencies
 
@@ -59,8 +65,21 @@ This project is still under active development and may experience:
 
 ## Usage
 
-- Use the UI to enter queries and view AI-powered search results and summaries.
-- Index new documents via the backend `/index` endpoint.
+### Core Features:
+
+- **🔍 Semantic Search**: Enter natural language queries and get AI-powered relevant results
+- **💡 Smart Suggestions**: Get intelligent query suggestions as you type
+- **🕒 Search History**: Access your recent searches with one click
+- **📤 Document Upload**: Upload .txt or .md files for automatic indexing
+- **📊 Live Stats**: View real-time count of indexed documents
+- **🤖 AI Summaries**: Each result includes contextual AI-generated summaries
+
+### Quick Start:
+
+1. Index sample documents using the "Index Sample Documents" button
+2. Try searching for terms like "artificial intelligence", "machine learning", or "neural networks"
+3. Upload your own documents using the file upload feature
+4. Use the search suggestions for better query ideas
 
 ## Known Issues & Troubleshooting
 
