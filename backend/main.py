@@ -1,11 +1,13 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import os
 import httpx
 import chromadb
 from chromadb.config import Settings
+import uuid
+from datetime import datetime
 
 # Set up DeepSeek API key
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -39,6 +41,14 @@ class SearchResult(BaseModel):
     content: str
     score: float
     summary: str
+
+class DocumentUpload(BaseModel):
+    title: Optional[str] = None
+    category: Optional[str] = "general"
+
+class SearchSuggestion(BaseModel):
+    query: str
+    count: int
 
 async def get_embedding(text: str):
     if not DEEPSEEK_API_KEY:
@@ -129,3 +139,82 @@ async def generate_summary(content: str, query: str) -> str:
             return result["choices"][0]["message"]["content"].strip()
     except Exception as e:
         return f"Summary unavailable: {str(e)}"
+
+@app.post("/upload-document")
+async def upload_document(file: UploadFile = File(...), metadata: str = "{}"):
+    """Upload and process a document file"""
+    try:
+        # Read file content
+        content = await file.read()
+        text_content = content.decode('utf-8')
+        
+        # Generate unique document ID
+        doc_id = str(uuid.uuid4())
+        
+        # Create document metadata
+        doc_metadata = {
+            "filename": file.filename,
+            "upload_time": datetime.now().isoformat(),
+            "content_length": len(text_content)
+        }
+        
+        # Get embedding and store
+        embedding = await get_embedding(text_content)
+        collection.add(
+            ids=[doc_id],
+            embeddings=[embedding],
+            documents=[text_content],
+            metadatas=[doc_metadata]
+        )
+        
+        return {
+            "status": "uploaded",
+            "document_id": doc_id,
+            "filename": file.filename,
+            "content_length": len(text_content)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+@app.get("/search-suggestions")
+async def get_search_suggestions(q: str = ""):
+    """Get intelligent search suggestions based on indexed content"""
+    if len(q) < 2:
+        return []
+    
+    try:
+        # Get similar documents
+        query_embedding = await get_embedding(q)
+        results = collection.query(
+            query_embeddings=[query_embedding],
+            n_results=3
+        )
+        
+        # Generate suggestions based on content
+        suggestions = []
+        for doc in results["documents"][0]:
+            # Extract key phrases (simple implementation)
+            words = doc.split()[:10]
+            suggestion = " ".join(words)
+            if suggestion not in [s["query"] for s in suggestions]:
+                suggestions.append({
+                    "query": suggestion,
+                    "type": "content-based"
+                })
+        
+        return suggestions[:5]
+    except Exception as e:
+        return []
+
+@app.get("/document-stats")
+async def get_document_stats():
+    """Get statistics about indexed documents"""
+    try:
+        count = collection.count()
+        return {
+            "total_documents": count,
+            "collection_name": collection.name,
+            "last_updated": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {"total_documents": 0, "error": str(e)}
